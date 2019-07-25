@@ -16,28 +16,16 @@ System requirements:
 Add the system information gathered above into a file called `hosts.ini`. For example:
 ```
 [master]
-192.16.35.12
+master ansible_ssh_host=<Master Server IP> ansible_ssh_user=<user name> ansible_ssh_private_key_file=<private key file path for master  IP>
+
 
 [node]
-192.16.35.[10:11]
+node1 ansible_ssh_host=<Node1 Server IP> ansible_ssh_user=<user name> ansible_ssh_private_key_file=<private key file path for Node 1 IP>
+node2 ansible_ssh_host=<Node2 Server IP> ansible_ssh_user=<user name> ansible_ssh_private_key_file=<private key file path for Node 2 IP>
 
 [kube-cluster:children]
 master
 node
-```
-
-If you're working with ubuntu, add the following properties to each host `ansible_python_interpreter='python3'`:
-```
-[master]
-192.16.35.12 ansible_python_interpreter='python3'
-
-[node]
-192.16.35.[10:11] ansible_python_interpreter='python3'
-
-[kube-cluster:children]
-master
-node
-
 ```
 
 Before continuing, edit `group_vars/all.yml` to your specified configuration.
@@ -55,19 +43,8 @@ After going through the setup, run the `site.yaml` playbook:
 
 ```sh
 $ ansible-playbook site.yaml
-...
-==> master1: TASK [addon : Create Kubernetes dashboard deployment] **************************
-==> master1: changed: [192.16.35.12 -> 192.16.35.12]
-==> master1:
-==> master1: PLAY RECAP *********************************************************************
-==> master1: 192.16.35.10               : ok=18   changed=14   unreachable=0    failed=0
-==> master1: 192.16.35.11               : ok=18   changed=14   unreachable=0    failed=0
-==> master1: 192.16.35.12               : ok=34   changed=29   unreachable=0    failed=0
-```
 
-The playbook will download `/etc/kubernetes/admin.conf` file to `$HOME/admin.conf`.
-
-If it doesn't work download the `admin.conf` from the master node:
+Download `/etc/kubernetes/admin.conf` file to `$HOME/admin.conf`.
 
 ```sh
 $ scp k8s@k8s-master:/etc/kubernetes/admin.conf .
@@ -106,31 +83,14 @@ Enable/disable these features in `group_vars/all.yml` (all disabled by default):
 # Additional feature to install
 additional_features:
   helm: false
-  metallb: false
   healthcheck: false
 ```
 
 ## Helm
 This will install helm in your cluster (https://helm.sh/) so you can deploy charts.
 
-## MetalLB
-This will install MetalLB (https://metallb.universe.tf/), very useful if you deploy the cluster locally and you need a load balancer to access the services.
-
 ## Healthcheck
 This will install k8s-healthcheck (https://github.com/emrekenci/k8s-healthcheck), a small application to report cluster status.
 
 # Utils
 Collection of scripts/utilities
-
-## Vagrantfile
-This Vagrantfile is taken from https://github.com/ecomm-integration-ballerina/kubernetes-cluster and slightly modified to copy ssh keys inside the cluster (install https://github.com/dotless-de/vagrant-vbguest is highly recommended)
-
-# Tips & Tricks
-If you use vagrant or your remote user is root, add this to `hosts.ini`
-```
-[master]
-192.16.35.12 ansible_user='root'
-
-[node]
-192.16.35.[10:11] ansible_user='root'
-```
