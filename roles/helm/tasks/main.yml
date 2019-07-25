@@ -124,6 +124,16 @@
   tags: helm
   ignore_errors: yes
   
+- name: "Upgrading Helm"
+  shell: "helm init --upgrade --kubeconfig {{ kubeadmin_config }}"
+  tags: helm
+  ignore_errors: yes
+
+- name: "Installing prometheus with grafana Helm"
+  shell: "helm install stable/prometheus-operator --namespace monitoring --name prometheus --kubeconfig {{ kubeadmin_config }}"
+  tags: helm
+  ignore_errors: yes
+  
 #- name: "nginx-ingress"
 #  shell: "helm install --name nginx-ingress stable/nginx-ingress --set rbac.create=true --set controller.publishService.enabled=true --kubeconfig {{ kubeadmin_config }}"
 #  tags: helm

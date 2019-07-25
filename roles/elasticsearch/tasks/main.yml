@@ -1,0 +1,54 @@
+---
+- name: Clean Tmp_dir if exist
+  file:
+    path: "{{ es_dir }}"
+    state: absent
+  ignore_errors: yes
+  tags: elasticsearch
+
+- name: "Create tmp directory"
+  file:
+    path: "{{ es_dir }}"
+    state: directory
+    mode: 0755
+  ignore_errors: yes
+  tags: elasticsearch
+
+- name: "Copy {{ network }} YAML files"
+  template:
+    src: "{{ item }}"
+    dest: "{{ es_dir }}/{{ item }}"
+  with_fileglob:
+    - ../files/*.yml
+  tags: elasticsearch
+
+- name: "Creating namespace kube-logging"
+  shell: "kubectl --kubeconfig={{ kubeadmin_config }} create -f {{ es_dir }}/kube-logging.yml"
+  tags: elasticsearch
+  
+- name: "Creating the Headless Service"
+  shell: "kubectl --kubeconfig={{ kubeadmin_config }} create -f {{ es_dir }}/elasticsearch_svc.yml"
+  tags: elasticsearch
+
+- name: "Creating the StatefulSet"
+  shell: "kubectl --kubeconfig={{ kubeadmin_config }} create -f {{ es_dir }}/elasticsearch_statefulset.yml"
+  tags: elasticsearch
+ 
+- name: "Creating the Kibana Deployment and Service"
+  shell: "kubectl --kubeconfig={{ kubeadmin_config }} create -f {{ es_dir }}/kibana.yml"
+  tags: elasticsearch
+  
+- name: "Creating the Fluentd DaemonSet"
+  shell: "kubectl --kubeconfig={{ kubeadmin_config }} create -f {{ es_dir }}/fluentd.yml"
+  tags: elasticsearch
+
+- name: "Testing Container Logging"
+  shell: "kubectl --kubeconfig={{ kubeadmin_config }} create -f {{ es_dir }}/counter.yml"
+  tags: elasticsearch
+
+- name: "Clean-up"
+  file:
+    path: "{{ es_dir }}"
+    state: absent
+  ignore_errors: yes
+  tags: elasticsearch

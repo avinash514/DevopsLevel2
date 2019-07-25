@@ -43,11 +43,12 @@ kube_addon_dir: /etc/kubernetes/addon
 # Additional feature to install
 additional_features:
   helm: true 
-  metallb: false
   healthcheck: true
+  elasticsearch: true
 
 # temporary directory used by additional features
 tmp_dir: /tmp/kubeadm-ansible-files
 helm_version: v2.14.2
 helm_url: https://storage.googleapis.com/kubernetes-helm/helm-{{ helm_version }}-linux-amd64.tar.gz
 helm_bin_dir: /opt/bin
+es_dir: /tmp/es-search
