@@ -14,12 +14,12 @@
   ignore_errors: yes
   tags: elasticsearch
 
-- name: "Copy {{ network }} YAML files"
+- name: "Copy elasticsearch, kibana and fluented YAML files"
   template:
     src: "{{ item }}"
     dest: "{{ es_dir }}/{{ item }}"
   with_fileglob:
-    - ../files/*.yml
+    - *.yml
   tags: elasticsearch
 
 - name: "Creating namespace kube-logging"

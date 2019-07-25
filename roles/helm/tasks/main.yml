@@ -35,7 +35,7 @@
     state: directory
     mode: 0755
   ignore_errors: yes
-  when: helm_exists.rc > 0
+#  when: helm_exists.rc > 0
   tags: helm
 
 #- name: copy helm binary
