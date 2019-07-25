@@ -1,0 +1,141 @@
+---
+- name: Check if helm is installed
+  shell: "command -v helm >/dev/null 2>&1"
+  register: helm_exists
+  ignore_errors: yes
+  tags: helm
+
+- name: Clean Tmp_dir if exist
+  file:
+    path: "{{ tmp_dir }}"
+    state: absent
+  ignore_errors: yes
+  when: helm_exists.rc > 0
+  tags: helm
+
+#- name: Download helm
+#  unarchive:
+#    src: "{{ helm_url }}"
+#    dest: /tmp 
+#    copy: no
+#  when: helm_exists.rc > 0
+#  tags: helm
+
+#- name: create the installation directory
+#  file:
+#    path: "{{ helm_bin_dir }}"
+#    state: directory
+#    mode: 0755
+#  ignore_errors: yes
+#  tags: helm
+
+- name: "Create tmp directory"
+  file:
+    path: "{{ tmp_dir }}"
+    state: directory
+    mode: 0755
+  ignore_errors: yes
+  when: helm_exists.rc > 0
+  tags: helm
+
+#- name: copy helm binary
+#  copy:
+#    src: /tmp/linux-amd64/helm
+#    dest: "{{ helm_bin_dir }}"
+#    mode: 0755
+#    remote_src: yes
+#  when: helm_exists.rc > 0
+#  tags: helm
+
+#- name: create helm soft link
+#  file:
+#    src: "/usr/local/bin/helm"
+#    dest: "/usr/bin/helm"
+#    state: link
+#  ignore_errors: yes
+#  tags: helm 
+
+#- name: vreate tiller soft link
+#  files:
+#    src: "/usr/local/bin/tiller"
+#    dest: "/usr/bin/helm"
+#    state: link
+#  ignore_errors: yes
+#  tags: helm
+
+#- name: "Check if Helm is installed"
+#  shell: command -v helm >/dev/null 2>&1
+#  register: helm_exists
+#  ignore_errors: yes
+#  tags: helm
+
+- name: "Install Helm"
+  block:
+    - name: "Get Helm installer"
+      get_url:
+        url: https://raw.githubusercontent.com/helm/helm/master/scripts/get
+        dest: "{{ tmp_dir }}/get_helm.sh"
+        mode: 0777
+  
+    - name: "Run the installer"
+      shell: "{{ tmp_dir }}/get_helm.sh"
+      ignore_errors: yes
+
+    - name: "Create Helm Soft Link"
+      file:
+        src: "/usr/local/bin/helm"
+        dest: "/usr/bin/helm"
+        state: link
+      ignore_errors: yes
+
+    - name: "Create Tiller Soft Link"
+      file:
+        src: "/usr/local/bin/tiller"
+        dest: "/usr/bin/tiller"
+        state: link
+      ignore_errors: yes
+
+  when: helm_exists.rc > 0
+  tags: helm
+
+- name: "Copy yaml file"
+  copy:
+    src: "rbac-config.yml"
+    dest: "{{ tmp_dir }}/rbac-config.yml"
+    mode: 0755
+  tags: helm
+
+- name: "RBAC configuration yaml"
+  shell: "kubectl --kubeconfig={{ kubeadmin_config }} apply -f {{ tmp_dir }}/rbac-config.yml"
+  tags: helm
+
+- name: "Creating serviceaccount tiller"
+  shell: "kubectl --kubeconfig={{ kubeadmin_config }} create serviceaccount --namespace kube-system tiller"
+  ignore_errors: yes
+  tags: helm
+
+- name: "RBAC Configuration"
+  shell: "kubectl --kubeconfig={{ kubeadmin_config }} create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller"
+  ignore_errors: yes
+  tags: helm
+
+- name: "Init Helm"
+  shell: "helm init --service-account tiller --wait --kubeconfig {{ kubeadmin_config }}"
+  tags: helm
+  ignore_errors: yes
+  
+#- name: "nginx-ingress"
+#  shell: "helm install --name nginx-ingress stable/nginx-ingress --set rbac.create=true --set controller.publishService.enabled=true --kubeconfig {{ kubeadmin_config }}"
+#  tags: helm
+#  ignore_errors: yes
+
+- name: "Update Helm repo"
+  shell: "helm repo update --kubeconfig {{ kubeadmin_config }}"
+  tags: helm
+
+- name: "Clean-up"
+  file:
+    path: "{{ tmp_dir }}"
+    state: absent
+  ignore_errors: yes
+  tags: helm
