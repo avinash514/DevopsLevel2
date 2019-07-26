@@ -1,5 +1,5 @@
 ---
-- name: Clean Tmp_dir if exist
+- name: "Clean Tmp_dir if exist"
   file:
     path: "{{ es_dir }}"
     state: absent
@@ -17,9 +17,9 @@
 - name: "Copy elasticsearch, kibana and fluented YAML files"
   template:
     src: "{{ item }}"
-    dest: "{{ es_dir }}/{{ item }}"
+    dest: "{{ es_dir }}/{{ item  | basename }}"
   with_fileglob:
-    - *.yml
+    - ../templates/*.yml
   tags: elasticsearch
 
 - name: "Creating namespace kube-logging"
