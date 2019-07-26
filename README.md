@@ -91,17 +91,10 @@ This will install helm in your cluster (https://helm.sh/) so you can deploy char
 ## Healthcheck
 This will install k8s-healthcheck (https://github.com/emrekenci/k8s-healthcheck), a small application to report cluster status.
 
-# Prometheus
+# Prometheus-Grafana
 - access Grafana via http://{IP}:3000/
 - Enable the app at http://{IP}:3000/plugins/grafana-kubernetes-app/edit
 - Add a data source of prometheus type: http://{IP}:3000/datasources/new
 
-# Grafana
-- Expose Grafana to cluster to get Dashboard
-```
-kubectl port-forward -n monitoring service/prometheus-grafana 3000:80 --> to local
-or
-kubectl expose service/prometheus-grafana -n monitoring --> to cluster
-```
-- To get password for Grafana
-- run `kubectl get secret --namespace monitoring prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo`
+# ElasticSearch-Kibana-Fluentd
+- run `kubectl port-forward kibana 5601:5601 --namespace=kube-logging
