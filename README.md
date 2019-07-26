@@ -55,9 +55,9 @@ Verify cluster is fully running using kubectl:
 $ export KUBECONFIG=~/admin.conf
 $ kubectl get node
 NAME      STATUS    AGE       VERSION
-master1   Ready     22m       v1.6.3
-node1     Ready     20m       v1.6.3
-node2     Ready     20m       v1.6.3
+master1   Ready     22m       v1.15.1
+node1     Ready     20m       v1.15.1
+node2     Ready     20m       v1.15.1
 
 $ kubectl get po -n kube-system
 NAME                                    READY     STATUS    RESTARTS   AGE
@@ -76,12 +76,13 @@ $ ansible-playbook reset-site.yaml
 # Additional features
 These are features that you could want to install to make your life easier.
 
-Enable/disable these features in `group_vars/all.yml` (all disabled by default):
+Enable/disable these features in `group_vars/all.yml` (all enabled by default):
 ```
 # Additional feature to install
 additional_features:
-  helm: false
-  healthcheck: false
+  helm: true
+  healthcheck: true
+  elasticsearch: true
 ```
 
 ## Helm
@@ -90,5 +91,17 @@ This will install helm in your cluster (https://helm.sh/) so you can deploy char
 ## Healthcheck
 This will install k8s-healthcheck (https://github.com/emrekenci/k8s-healthcheck), a small application to report cluster status.
 
-# Utils
-Collection of scripts/utilities
+# Prometheus
+- access Grafana via http://{IP}:3000/
+- Enable the app at http://{IP}:3000/plugins/grafana-kubernetes-app/edit
+- Add a data source of prometheus type: http://{IP}:3000/datasources/new
+
+# Grafana
+- Expose Grafana to cluster to get Dashboard
+```
+kubectl port-forward -n monitoring service/prometheus-grafana 3000:80 --> to local
+or
+kubectl expose service/prometheus-grafana -n monitoring --> to cluster
+```
+- To get password for Grafana
+- run `kubectl get secret --namespace monitoring prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo`

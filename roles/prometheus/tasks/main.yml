@@ -1,54 +1,86 @@
 ---
-- name: "Clean Tmp_dir if exist"
+- name: "Clean prometheus_dir if exist"
   file:
-    path: "{{ es_dir }}"
+    path: "{{ prometheus_dir }}"
     state: absent
   ignore_errors: yes
-  tags: elasticsearch
+  tags: prometheus
 
 - name: "Create tmp directory"
   file:
-    path: "{{ es_dir }}"
+    path: "{{ prometheus_dir }}"
     state: directory
     mode: 0755
   ignore_errors: yes
-  tags: elasticsearch
+  tags: prometheus
 
-- name: "Copy elasticsearch, kibana and fluented YAML files"
+- name: "Copy prometheus and grafana YAML files"
   template:
     src: "{{ item }}"
-    dest: "{{ es_dir }}/{{ item  | basename }}"
+    dest: "{{ prometheus_dir }}/{{ item  | basename }}"
   with_fileglob:
-    - ../templates/*.yml
-  tags: elasticsearch
+    - ../templates/*.yaml
+  tags: prometheus
 
-- name: "Creating namespace kube-logging"
-  shell: "kubectl --kubeconfig={{ kubeadmin_config }} create -f {{ es_dir }}/kube-logging.yml"
-  tags: elasticsearch
+- name: "Creating namespace monitoring"
+  shell: "kubectl --kubeconfig={{ kubeadmin_config }} apply -f {{ prometheus_dir }}/namespace.yaml"
+  ignore_errors: yes
+  tags: prometheus
   
-- name: "Creating the Headless Service"
-  shell: "kubectl --kubeconfig={{ kubeadmin_config }} create -f {{ es_dir }}/elasticsearch_svc.yml"
-  tags: elasticsearch
+- name: "Creating the Service Account and Cluster Role"
+  shell: "kubectl --kubeconfig={{ kubeadmin_config }} apply -f {{ prometheus_dir }}/prometheus-rbac.yaml"
+  ignore_errors: yes
+  tags: prometheus
 
-- name: "Creating the StatefulSet"
-  shell: "kubectl --kubeconfig={{ kubeadmin_config }} create -f {{ es_dir }}/elasticsearch_statefulset.yml"
-  tags: elasticsearch
+- name: "create the config for prometheus to collect data from Kubernetes"
+  shell: "kubectl --kubeconfig={{ kubeadmin_config }} apply -f {{ prometheus_dir }}/prometheus-config.yaml"
+  ignore_errors: yes
+  tags: prometheus
  
-- name: "Creating the Kibana Deployment and Service"
-  shell: "kubectl --kubeconfig={{ kubeadmin_config }} create -f {{ es_dir }}/kibana.yml"
-  tags: elasticsearch
+- name: "Prometheus Deployment"
+  shell: "kubectl --kubeconfig={{ kubeadmin_config }} apply -f {{ prometheus_dir }}/prometheus-deploy.yaml"
+  ignore_errors: yes
+  tags: prometheus
   
-- name: "Creating the Fluentd DaemonSet"
-  shell: "kubectl --kubeconfig={{ kubeadmin_config }} create -f {{ es_dir }}/fluentd.yml"
-  tags: elasticsearch
+- name: "Prometheus Service"
+  shell: "kubectl --kubeconfig={{ kubeadmin_config }} apply -f {{ prometheus_dir }}/prometheus-svc.yaml"
+  ignore_errors: yes
+  tags: prometheus
 
-- name: "Testing Container Logging"
-  shell: "kubectl --kubeconfig={{ kubeadmin_config }} create -f {{ es_dir }}/counter.yml"
-  tags: elasticsearch
+- name: "Grafana Deployment"
+  shell: "kubectl --kubeconfig={{ kubeadmin_config }} apply -f {{ prometheus_dir }}/grafana.yaml"
+  ignore_errors: yes
+  tags: prometheus
+
+- name: "Grafana Deployment expose to LoadBalancer"
+  shell: "kubectl --kubeconfig={{ kubeadmin_config }} expose deployment grafana --type=LoadBalancer --namespace=monitoring"
+  ignore_errors: yes
+  tags: prometheus
+
+- name: "create node-exporter daemon set to export node information"
+  shell: "kubectl --kubeconfig={{ kubeadmin_config }} apply -f{{ prometheus_dir }}/node-exporter.yaml"
+  ignore_errors: yes
+  tags: prometheus
+
+- name: "create kube-state-metrics deployment to collect metrics about the cluster"
+  shell: "kubectl --kubeconfig={{ kubeadmin_config }} apply -f{{ prometheus_dir }}/state-metrics-deploy.yaml"
+  ignore_errors: yes
+  tags: prometheus
+
+- name: "service account and cluster role with the permission of getting cluster info for state-metrics."
+  shell: "kubectl --kubeconfig={{ kubeadmin_config }} apply -f{{ prometheus_dir }}/state-metrics-rbac.yaml"
+  ignore_errors: yes
+  tags: prometheus
+
+- name: "Prometheus Deployment expose to LoadBalancer"
+  shell: "kubectl --kubeconfig={{ kubeadmin_config }} expose deployment prometheus --type=LoadBalancer --namespace=monitoring"
+  ignore_errors: yes
+  tags: prometheus
+
 
 - name: "Clean-up"
   file:
     path: "{{ es_dir }}"
     state: absent
   ignore_errors: yes
-  tags: elasticsearch
+  tags: prometheus
