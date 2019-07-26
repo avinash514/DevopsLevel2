@@ -42,4 +42,11 @@
       when: "additional_features.elasticsearch"
       run_once: yes
       tags: elasticsearch
+    
+    - name: "Prometheus Role"
+      include_role:
+        name: prometheus
+      when: "additional_features.prometheus"
+      run_once: yes
+      tags: prometheus
 
