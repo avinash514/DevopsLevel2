@@ -76,13 +76,14 @@ $ ansible-playbook reset-site.yaml
 # Additional features
 These are features that you could want to install to make your life easier.
 
-Enable/disable these features in `group_vars/all.yml` (all enabled by default):
+Enable/disable these features in `group_vars/all.yml` (all disabled by default):
 ```
 # Additional feature to install
 additional_features:
   helm: true
   healthcheck: true
   elasticsearch: true
+  prometheus: true
 ```
 
 ## Helm
