@@ -4,33 +4,33 @@
   shell: "kubeadm reset --force"
   register: reset_cluster
 
-#- name: Enable 6443/tcp port
-#  shell: "firewall-cmd --permanent --add-port=6443/tcp"
+- name: Enable 6443/tcp port
+  shell: "firewall-cmd --permanent --add-port=6443/tcp"
 
-#- name: Enable 2379-2380/tcp ports
-#  shell: "firewall-cmd --permanent --add-port=2379-2380/tcp"
+- name: Enable 2379-2380/tcp ports
+  shell: "firewall-cmd --permanent --add-port=2379-2380/tcp"
 
-#- name: Enable 10250/tcp port
-#  shell: "firewall-cmd --permanent --add-port=10250/tcp"
+- name: Enable 10250/tcp port
+  shell: "firewall-cmd --permanent --add-port=10250/tcp"
 
-#- name: Enable 10251/tcp port
-#  shell: "firewall-cmd --permanent --add-port=10251/tcp"
+- name: Enable 10251/tcp port
+  shell: "firewall-cmd --permanent --add-port=10251/tcp"
 
-#- name: Enable 10252/tcp port
-#  shell: "firewall-cmd --permanent --add-port=10252/tcp"
+- name: Enable 10252/tcp port
+  shell: "firewall-cmd --permanent --add-port=10252/tcp"
 
-#- name: Enable 10255/tcp port
-#  shell: "firewall-cmd --permanent --add-port=10255/tcp"
+- name: Enable 10255/tcp port
+  shell: "firewall-cmd --permanent --add-port=10255/tcp"
 
-#- name: Enable 80/tcp port
-#  shell: "firewall-cmd --permanent --add-port=80/tcp"
+- name: Enable 80/tcp port
+  shell: "firewall-cmd --permanent --add-port=80/tcp"
 
-#- name: Reload Firewall
-#  shell: "firewall-cmd --reload"
+- name: Reload Firewall
+  shell: "firewall-cmd --reload"
 
-#- name: stop firewall
-#  shell: "systemctl stop firewalld"
-#  ignore_errors: yes
+- name: stop firewall
+  shell: "systemctl stop firewalld"
+  ignore_errors: yes
 
 - name: Init Kubernetes cluster
   when: reset_cluster is succeeded
