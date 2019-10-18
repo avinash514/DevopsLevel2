@@ -6,12 +6,15 @@
 
 - name: Enable 10251/tcp port
   shell: "firewall-cmd --permanent --add-port=10251/tcp"
+  ignore_errors: yes
 
 - name: Enable 10255/tcp port
   shell: "firewall-cmd --permanent --add-port=10255/tcp"
+  ignore_errors: yes
 
 - name: Reload Firewall
   shell: "firewall-cmd --reload"
+  ignore_errors: yes
 
 - name: Stop Firewall
   shell: "systemctl stop firewalld"
