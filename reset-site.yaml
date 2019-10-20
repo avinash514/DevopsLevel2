@@ -21,6 +21,7 @@
     - name: Remove Docker Installation
       yum:
         name:
+          - docker-ce
           - docker
           - docker-client
           - docker-client-latest
