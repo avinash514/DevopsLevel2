@@ -19,5 +19,18 @@
       ignore_errors: True
     
     - name: Remove Docker Installation
-      shell: "yum remove docker -y"
-      ignore_errors: True
+      when: ansible_os_family == "RedHat"
+      yum:
+        name:
+          - docker
+          - docker-client
+          - docker-client-latest
+          - docker-common
+          - docker-latest
+          - docker-latest-logrotate
+          - docker-logrotate
+          - docker-engine
+          - docker-ce
+          - kubelet
+          - kubeadm
+        state: removed
