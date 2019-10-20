@@ -13,6 +13,14 @@
 
 - name: Copy Docker environment config file
   template: src=docker.j2 dest={{ system_env_dir }}/docker
+  
+- name: Copy Docker Daemon config file
+  template:
+    src: "daemon.j2"
+    dest: "{{ docker_dir }}/daemon.json"
+    owner: root
+    group: root
+    mode: 0755
 
 - name: Add any insecure registries to Docker config
   when: insecure_registries is defined and insecure_registries | length > 0
