@@ -19,7 +19,6 @@
       ignore_errors: True
     
     - name: Remove Docker Installation
-      when: ansible_os_family == "RedHat"
       yum:
         name:
           - docker
