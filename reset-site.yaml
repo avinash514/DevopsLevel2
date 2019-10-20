@@ -17,3 +17,7 @@
       command: ip link delete cni0
       when: network == "flannel"
       ignore_errors: True
+    
+    - name: Remove Docker Installation
+      shell: "yum remove docker -y"
+      ignore_errors: True
