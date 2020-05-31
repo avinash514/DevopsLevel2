@@ -4,6 +4,10 @@
   shell: "kubeadm reset --force"
   register: reset_cluster
 
+- name: start firewall
+  shell: "systemctl start firewalld"
+  ignore_errors: yes
+
 - name: Enable 6443/tcp port
   shell: "firewall-cmd --permanent --add-port=6443/tcp"
   ignore_errors: yes
@@ -28,17 +32,37 @@
   shell: "firewall-cmd --permanent --add-port=10255/tcp"
   ignore_errors: yes
 
+- name: Enable 10253/tcp port
+  shell: "firewall-cmd --permanent --add-port=10253/tcp"
+  ignore_errors: yes
+
 - name: Enable 80/tcp port
   shell: "firewall-cmd --permanent --add-port=80/tcp"
+  ignore_errors: yes
+
+- name: Enable 179/TCP port
+  shell: "firewall-cmd --permanent --add-port=179/tcp"
+  ignore_errors: yes
+
+- name: Enable 4789/UDP port
+  shell: "firewall-cmd --permanent --add-port=4789/udp"
+  ignore_errors: yes
+
+- name: Enable 5473/TCP port
+  shell: "firewall-cmd --permanent --add-port=5473/tcp"
+  ignore_errors: yes
+
+- name: Enable 2379/TCP port
+  shell: "firewall-cmd --permanent --add-port=2379/tcp"
   ignore_errors: yes
 
 - name: Reload Firewall
   shell: "firewall-cmd --reload"
   ignore_errors: yes
 
-- name: stop firewall
-  shell: "systemctl stop firewalld"
-  ignore_errors: yes
+#- name: stop firewall
+#  shell: "systemctl stop firewalld"
+#  ignore_errors: yes
 
 - name: Init Kubernetes cluster
   when: reset_cluster is succeeded
@@ -72,9 +96,25 @@
   when: init_cluster is succeeded and enable_dashboard
   command: |
     kubectl --kubeconfig={{ kubeadmin_config }} \
-        apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended.yaml
+        apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.1/aio/deploy/recommended.yaml 
   register: create_result
   until: create_result.rc == 0
   retries: 5
   delay: 2
+  ignore_errors: true
+
+- name: Creating service account for dashboard
+  when: create_result is succeeded and enable_dashboard
+  command: |
+    kubectl create serviceaccount cluster-admin-dashboard-sa --kubeconfig={{ kubeadmin_config }}
+  register: create_serviceaccount
+  ignore_errors: true
+
+- name: Create Cluster rolebinding
+  when: create_serviceaccount is succeeded and enable_dashboard
+  command: |
+    kubectl create clusterrolebinding cluster-admin-dashboard-sa \
+        --clusterrole=cluster-admin \
+        --serviceaccount=default:cluster-admin-dashboard-sa \
+        --kubeconfig={{ kubeadmin_config }}
   ignore_errors: true

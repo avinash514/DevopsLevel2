@@ -4,6 +4,14 @@
   shell: "kubeadm reset --force"
   register: reset_cluster
 
+- name: Start Firewall
+  shell: "systemctl start firewalld"
+  ignore_errors: yes
+
+- name: Enable 10000-19999/tcp ports
+  shell: "firewall-cmd --permanent --add-port=10000-19999/tcp"
+  ignore_errors: yes
+
 - name: Enable 10251/tcp port
   shell: "firewall-cmd --permanent --add-port=10251/tcp"
   ignore_errors: yes
@@ -12,13 +20,17 @@
   shell: "firewall-cmd --permanent --add-port=10255/tcp"
   ignore_errors: yes
 
+- name: Enable 10250/tcp port
+  shell: "firewall-cmd --permanent --add-port=10250/tcp"
+  ignore_errors: yes
+
 - name: Reload Firewall
   shell: "firewall-cmd --reload"
   ignore_errors: yes
 
-- name: Stop Firewall
-  shell: "systemctl stop firewalld"
-  ignore_errors: yes
+#- name: Stop Firewall
+#  shell: "systemctl stop firewalld"
+#  ignore_errors: yes
 
 - name: Join to Kubernetes cluster
   when: reset_cluster is succeeded

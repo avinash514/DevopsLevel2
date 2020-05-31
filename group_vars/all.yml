@@ -3,9 +3,10 @@
 
 # Kubernetes pre-flight-checks
 cpuCheck: NumCPU
+# cpuCheck: all
 
 # Kubernetes
-kube_version: v1.15.1
+kube_version: v1.18.0
 token: b0f7b8.8d1767876297d85c
 
 # 1.8.x feature: --feature-gates SelfHosting=true
@@ -18,11 +19,12 @@ kubeadm_opts: ""
 
 service_cidr: "10.96.0.0/12" 
 pod_network_cidr: "10.244.0.0/16"
+#pod_network_cidr: "192.168.0.0/16"
 
 calico_etcd_service: "10.96.232.136"
 
 # Network implementation('flannel', 'calico')
-network: flannel 
+network: calico 
 
 # Change this to an appropriate interface, preferably a private network.
 # For example, on DigitalOcean, you would use eth1 as that is the default private network interface.
@@ -31,8 +33,8 @@ network_interface: "eth0"
 enable_dashboard: yes
 
 # A list of insecure registries you might need to define
-# insecure_registries: []
-insecure_registries: ['gcr.io']
+insecure_registries: []
+# insecure_registries: ['gcr.io']
 
 systemd_dir: /lib/systemd/system
 docker_dir: /etc/docker
@@ -45,7 +47,7 @@ kube_addon_dir: /etc/kubernetes/addon
 additional_features:
   helm: true 
   healthcheck: false 
-  elasticsearch: true
+  elasticsearch: false 
   prometheus: true
 
 # temporary directory used by additional features

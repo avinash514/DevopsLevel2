@@ -119,15 +119,15 @@
   ignore_errors: yes
   tags: helm
 
-- name: "Init Helm"
-  shell: "helm init --service-account tiller --wait --kubeconfig {{ kubeadmin_config }}"
-  tags: helm
-  ignore_errors: yes
-  
 - name: "Upgrading Helm"
   shell: "helm init --upgrade --kubeconfig {{ kubeadmin_config }}"
   tags: helm
   ignore_errors: yes
+
+- name: "Creating namespace monitoring"
+  shell: "kubectl --kubeconfig={{ kubeadmin_config }} create namespace monitoring"
+  ignore_errors: yes
+  tags: helm
 
 - name: "Installing prometheus with grafana Helm"
   shell: "helm install stable/prometheus-operator --namespace monitoring --name prometheus --kubeconfig {{ kubeadmin_config }}"
